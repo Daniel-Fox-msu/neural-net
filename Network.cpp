@@ -1,5 +1,5 @@
 #include "Network.h"
-#include "CNN.cpp"
+#include "CNN.h"
 
 
 /*   Constructor
@@ -19,7 +19,7 @@ Network::Network(vector<int> sizes){
     default_random_engine generator (seed);
 	normal_distribution<double> dist(0.0, 1.0);
 	
-	//initialize weights and biases with random numbers from above distribution
+	//initialize weights and biases with random numbers from above distribution (will make a function)
 	for (int i = 1; i < num_layers; i++){
 		current_layer_biases.clear();
 		current_layer_weights.clear();
@@ -96,7 +96,7 @@ pair< vector<vector<double>>, vector<vector<vector<double>>> > Network::backprop
 	vector<vector<double>>& b = biases;
 	vector<vector<vector<double>>>& w = weights;
 
-	cout << x.size() << endl << y.size() << endl << b.size() << endl;
+	//cout << x.size() << endl << y.size() << endl << b.size() << endl;
 	
 	/*
 	this next loop fills partial_b and partial_w with 0.0 and fills the zs list with each layer's
@@ -173,7 +173,7 @@ pair< vector<vector<double>>, vector<vector<vector<double>>> > Network::backprop
 		}
 	}
 	
-	cout << "point 1" << endl;
+	//cout << "point 1" << endl;
 
 	/*
 	this loop starts at the second to last layer, and ends at the first layer.
@@ -186,7 +186,7 @@ pair< vector<vector<double>>, vector<vector<vector<double>>> > Network::backprop
 			sp.push_back(sig_prime(z[j]));
 		}
 		
-		cout << "point 2" << endl;
+		//cout << "point 2" << endl;
 		//get transpose of weights (will make a function)
 		for (int j = 0; j < w[i+1][0].size(); j++){
 			for (int k = 0; k < w[i+1].size(); k++){
@@ -196,30 +196,31 @@ pair< vector<vector<double>>, vector<vector<vector<double>>> > Network::backprop
 			cw_t.clear();
 		}
 		
-		cout << "point 3, should loop " << prev_delta.size() << " times" << endl;
+		//cout << "point 3, should loop " << prev_delta.size() << " times" << endl;
 		//find the next delta vector
 		for (int j = 0; j < prev_delta.size(); j++){//for each row in w_t
+			//cout << j << endl;
 			d_w = 0;
 			//add to d_w, dot product of prev_delta and current row of w_t
-			for (int k = 0; k < w_t[i][j].size(); k++){
-				d_w += prev_delta[j] * w_t[i][j][k];
+			for (int k = 0; k < w_t[j].size(); k++){
+				d_w += prev_delta[j] * w_t[j][k];
 			}
-			cout << j << endl;
+
 			delta.push_back(d_w * sp[j]);
 		}
 		sp.clear();
 		
-		cout << "point 4" << endl;
+		//cout << "point 4" << endl;
 		partial_b[i] = delta;
-		cout << delta.size() << endl;
+		//cout << delta.size() << endl;
 		//get the partial_w matrix for this layer
 		for (int j = 0; j < delta.size(); j++){
-			cout << j << endl;
+			//cout << j << endl;
 			for (int k = 0; k < activations[i].size(); k++){
 				partial_w[i][j][k] = delta[j] * activations[i][k];
 			}
 		}
-		cout << "point 5" << endl;
+		//cout << "point 5" << endl;
 	}
 	//return partial_b and partial_w
 	result.first = partial_b;
@@ -270,13 +271,13 @@ void Network::update(vector<vector<double>> xs, vector<vector<double>> ys, doubl
 	}
 	
 	
-	cout << "backprop loop" << endl;
+	//cout << "backprop loop" << endl;
 	
 	//for each training example, get nb and nw (partial gradients of biases and weights)
 	for (int i = 0; i < xs.size(); i++){
-		cout << "start backprop" << endl;
+		//cout << "start backprop" << endl;
 		delta_bw = backprop(xs[i], ys[i]);
-		cout << "backprop done" << endl;
+		//cout << "backprop done" << endl;
 		dnb = delta_bw.first;
 		dnw = delta_bw.second;
 		
@@ -316,7 +317,7 @@ breaks the data up into batches and calls the update function until all data is 
 void Network::train(vector<vector<double>> xs, vector<vector<double>> ys, int batch_size, double lr){
 	int n = xs.size();
 	int batches = (n/batch_size) + 1;
-	cout << "number of batches: " << batches << endl;
+	//cout << "number of batches: " << batches << endl;
 	
 	//currently nonrandom batches are used, will be random later
 	vector<vector<double>> batch_xs; //for this batch's inputs
@@ -334,7 +335,7 @@ void Network::train(vector<vector<double>> xs, vector<vector<double>> ys, int ba
 				batch_ys.push_back(ys[i*batch_size + j]);
 			}
 		}
-		cout << "current batch: " << i+1 << endl;
+		//cout << "current batch: " << i+1 << endl;
 		//update with the data from this batch
 		update(batch_xs, batch_ys, lr);
 	}
@@ -347,7 +348,7 @@ void Network::evaluate(vector<vector<double>> xs, vector<wchar_t> correct_chars,
 	vector<double> a;
 	wchar_t network_output;
 	int highest_a_index;
-	int highest_a = 0;
+	double highest_a = 0.0;
 	int total_ex = 0;
 	int total_correct = 0;
 	for (int i = 0; i < xs.size(); i++){
@@ -358,6 +359,7 @@ void Network::evaluate(vector<vector<double>> xs, vector<wchar_t> correct_chars,
 				highest_a_index = j;
 			}
 		}
+
 		network_output = char_set[highest_a_index];
 		if (network_output == correct_chars[i]){
 			total_correct++;
@@ -365,8 +367,49 @@ void Network::evaluate(vector<vector<double>> xs, vector<wchar_t> correct_chars,
 		total_ex++;
 		highest_a = 0;
 	}
-	cout << total_correct << "/" << total_ex;
+	cout << total_correct << "/" << total_ex << endl;
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
