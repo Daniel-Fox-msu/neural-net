@@ -59,20 +59,26 @@ file_data get_file_data(int fnum){
 	//the data files of the CASIA offline dataset are named "1xxx-c.gnt"
 	string fnum_str = std::to_string(fnum + 1000);
 	string fname = fnum_str + "-c.gnt";
+	string bmp_fname = fnum_str + "-bmps.gnt";
 	const char* filename = fname.c_str();
+	const char* bmp_name = bmp_fname.c_str(); 
 	
 	//open file with the filename and get iterator
-	ifstream infile;
-	infile.open(filename, std::ios::binary | std::ios::in);
-	std::istreambuf_iterator<char> it (infile);
+	ifstream data_file;
+	data_file.open(filename, std::ios::binary | std::ios::in);
+	std::istreambuf_iterator<char> it (data_file);
 	std::istreambuf_iterator<char> eof; //end of file
+	ifstream bmp_file;
+	bmp_file.open(bmp_name, std::ios::binary | std::ios::in);
+	std::istreambuf_iterator<char> bmp_it (bmp_file);
 	file_data result;
 	
 	string entry_size_b, width_b, height_b, char_b;
 	vector<double> bmp;
 	int entry_size, width, height, bmp_size;
-	wstring correct_chard;
+	wstring correct_char_ws;
 	wchar_t cor_ch;
+	int pixel;
 
 	while(it != eof){ //main loop through file
 	
@@ -110,21 +116,16 @@ file_data get_file_data(int fnum){
 		//for each byte of the bitmap, 255 represents white and 0 represents black. All white 
 		//pixels are assigned 0, while all nonwhite pixels are assigned 1.
 		for (int i = 0; i < bmp_size; i++){
-			if((int((unsigned char)*it)) == 255){
-				bmp.push_back(0.0);
-				it++;
-			}
-			else{
-				bmp.push_back(1.0);
-				it++;
-			}
+			it++;			
+		}
+		for (int i = 0; i < 900; i++){
+			pixel = int((unsigned char)(*bmp_it));
+			bmp.push_back(pixel);
+			bmp_it++;			
 		}
 		
-		//filler so all bmp are same size, bandaid fix
-		while(bmp_size < 21615){
-			bmp.push_back(0);
-			bmp_size++;
-		}
+
+
 		
 		//add data to result (file_data object)
 		result.correct_chars.push_back(cor_ch);
@@ -143,5 +144,6 @@ vector<double> cost_derivative(vector<double> x, vector<double> y){
 	}
 	return result;
 }
+
 
 
